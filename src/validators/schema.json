@@ -1,0 +1,92 @@
+{
+    "login": {
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "format": "email" },
+        "password": { "type": "string" }
+      },
+      "required": ["email", "password"],
+      "additionalProperties": false
+    },
+
+
+    "register": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "phone": { "type": "string" },
+        "password": { "type": "string" }
+      },
+      "required": ["name", "email", "phone", "password"],
+      "additionalProperties": false
+    },
+
+
+    "verifyEmail": {
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "format": "email" },
+        "otp": { "type": "string" }
+      },
+      "required": ["otp", "email"],
+      "additionalProperties": false
+    },
+
+    "forgetPassword": {
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "format": "email" }
+      },
+      "required": ["email"],
+      "additionalProperties": false
+    },
+    
+    
+    "resetPassword": {
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "format": "email" },
+        "password": { "type": "string" }
+      },
+      "required": ["email", "password"],
+      "additionalProperties": false
+    },
+    
+    
+    "changePassword": {
+      "type": "object",
+      "properties": {
+        "oldPassword": { "type": "string" },
+        "newPassword": { "type": "string" }
+      },
+      "required": ["oldPassword", "newPassword"],
+      "additionalProperties": false
+    },
+
+
+    "addTicket": {
+      "type": "object",
+      "properties": {
+          "title": { "type": "string" },
+          "description": { "type": "string" },
+          "status": { "type": "string" },
+          "deadline": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "description", "deadline"],
+      "additionalProperties": false
+    },
+    
+    
+    "editTicket": {
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "minLength": 1 },
+        "description": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    }
+
+
+}
+  
