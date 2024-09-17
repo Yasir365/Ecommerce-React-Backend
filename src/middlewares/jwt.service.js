@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const generateToken = (data) => {
     const token = jwt.sign(
         { userId: data._id, email: data.email, name: data.name, role: data.role },
-        process.env.JWT_SECRET || 'ecommerce-react-secret',
+        process.env.JWT_SECRET,
         { expiresIn: '1d' }
     );
 

@@ -41,8 +41,8 @@ const sendEmail = async (email, otp) => {
     let transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
-            user: process.env.EMAIL || 'yasirsaleem365@gmail.com',
-            pass: process.env.PASSWORD || 'etsv tjth qfmb mycr'
+            user: process.env.EMAIL,
+            pass: process.env.PASSWORD
         }
     });
 
@@ -225,7 +225,7 @@ const verifyToken = async (req, res) => {
         return res.status(401).json({ message: 'Unauthorized' });
 
     }
-    jwt.verify(token, 'ecommerce-react-secret', (err, decodedToken) => {
+    jwt.verify(token, process.env.JWT_SECRET, (err, decodedToken) => {
         if (err) {
             return res.status(200).json({ message: 'Invalid token', success: false });
         }
