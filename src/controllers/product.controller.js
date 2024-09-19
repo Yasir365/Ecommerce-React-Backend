@@ -2,7 +2,7 @@ const verifySchema = require('../validators/validate');
 const schema = require('../validators/schema.json');
 const Product = require('../models/product.model');
 
-const list = async (req, res) => {
+const productList = async (req, res) => {
     const currentPage = parseInt(req.query.currentPage) || 1;
     const itemsPerPage = parseInt(req.query.itemsPerPage) || 10;
     const keyword = req.query.search || '';
@@ -39,7 +39,11 @@ const list = async (req, res) => {
 };
 
 
-const add = async (req, res) => {
+const addProduct = async (req, res) => {
+    const verifyReq = verifySchema(schema.addProduct, req.body);
+    if (!verifyReq.success) {
+        return res.status(400).send(verifyReq.message);
+    }
     const { title, description, price } = req.body;
 
     // Check if image is uploaded
@@ -68,43 +72,44 @@ const add = async (req, res) => {
 };
 
 
+const editProduct = async (req, res) => {
+    const verifyReq = verifySchema(schema.editProduct, req.body);
+    if (!verifyReq.success) {
+        return res.status(400).send(verifyReq.message);
+    }
+    const { productId,title, description, price } = req.body;
 
+    try {
+        const existingProduct = await Product.findById(productId);
+        if (!existingProduct) {
+            return res.status(404).json({ message: 'Product not found' });
+        }
 
-const edit = async (req, res) => {
-    // const verifyReq = verifySchema(schema.editTicket, req.body);
-    // if (!verifyReq.success) {
-    //     return res.status(400).send(verifyReq.message);
-    // }
+        // Update fields
+        if (title) existingProduct.title = title;
+        if (description) existingProduct.description = description;
+        if (price) existingProduct.price = price;
 
-    // const id = req.query.id;
-    // const updateFields = req.body;
+        // Check if image is uploaded
+        if (req.file) {
+            existingProduct.image = req.file.path; // Use new file path for the image field
+        }
 
-    // try {
-    //     // Check if the ticket exists
-    //     const existingTicket = await Tickets.findById(id);
-    //     if (!existingTicket) {
-    //         return res.status(404).json({ message: 'Ticket not found' });
-    //     }
+        // Save updated product
+        const updatedProduct = await existingProduct.save();
 
-    //     Object.keys(updateFields).forEach(field => {
-    //         existingTicket[field] = updateFields[field];
-    //     });
-
-    //     const updatedTicket = await existingTicket.save();
-
-    //     res.status(200).json({
-    //         message: 'Ticket updated successfully',
-    //         ticket: updatedTicket,
-    //         success: true
-    //     });
-    // } catch (error) {
-    //     res.status(500).json({ message: 'Failed to update ticket', error: error.message });
-    // }
+        res.status(200).json({
+            message: 'Product updated successfully',
+            data: updatedProduct,
+            success: true
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Failed to update product', error: error.message });
+    }
 };
 
 
-
-const remove = async (req, res) => {
+const deleteProduct = async (req, res) => {
     // const userId = req.user.id;
     // const ticketId = req.query.id;
 
@@ -133,4 +138,4 @@ const remove = async (req, res) => {
 }
 
 
-module.exports = { list, add, edit, remove };
+module.exports = { productList, addProduct, editProduct, deleteProduct };
