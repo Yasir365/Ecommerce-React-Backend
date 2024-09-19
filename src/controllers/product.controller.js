@@ -40,19 +40,19 @@ const list = async (req, res) => {
 
 
 const add = async (req, res) => {
+    const { title, description, price } = req.body;
 
-    // const verifyReq = verifySchema(schema.addTicket, req.body);
-    // if (!verifyReq.success) {
-    //     return res.status(400).send(verifyReq.message);
-    // }
+    // Check if image is uploaded
+    if (!req.file) {
+        return res.status(400).json({ success: false, message: 'Image is required' });
+    }
 
-    const { title, description, price, image } = req.body;
     try {
         const newProduct = new Product({
             title,
             description,
             price,
-            image
+            image: req.file.path // Use file path for the image field
         });
 
         const savedProduct = await newProduct.save();
@@ -63,9 +63,10 @@ const add = async (req, res) => {
             success: true
         });
     } catch (error) {
-        res.status(500).json({ success: false, message: 'Failed to add Ticket', error: error.message });
+        res.status(500).json({ success: false, message: 'Failed to add product', error: error.message });
     }
 };
+
 
 
 
