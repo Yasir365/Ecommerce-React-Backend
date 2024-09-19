@@ -1,10 +1,9 @@
 var express = require('express');
 var router = express.Router();
 const authRoutes = require('./auth.routes.js');
-const ticketsRoutes = require('./tickets.routes.js');
-const { authenticateToken } = require('../middlewares/jwt.service');
+const productsRoutes = require('./products.routes.js');
 
 router.use('/auth', authRoutes);
-router.use('/tickets', authenticateToken, ticketsRoutes);
+router.use('/products', productsRoutes);
 
 module.exports = router;

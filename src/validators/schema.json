@@ -65,28 +65,17 @@
     },
 
 
-    "addTicket": {
+    "addProduct": {
       "type": "object",
       "properties": {
           "title": { "type": "string" },
           "description": { "type": "string" },
-          "status": { "type": "string" },
-          "deadline": { "type": "string", "format": "date-time" }
+          "price": { "type": "number" },
+          "image": { "type": "string" }
       },
-      "required": ["title", "description", "deadline"],
-      "additionalProperties": false
-    },
-    
-    
-    "editTicket": {
-      "type": "object",
-      "properties": {
-        "title": { "type": "string", "minLength": 1 },
-        "description": { "type": "string", "minLength": 1 }
-      },
+      "required": ["title", "description", "price", "image"],
       "additionalProperties": false
     }
-
 
 }
   
