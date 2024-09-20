@@ -144,10 +144,10 @@ const editProduct = async (req, res) => {
 
 
 const deleteProduct = async (req, res) => {
-    const verifyReq = verifySchema(schema.deleteProduct, req.query);
-    if (!verifyReq.success) {
-        return res.status(400).send(verifyReq.message);
-    }
+    // const verifyReq = verifySchema(schema.deleteProduct, req.query);
+    // if (!verifyReq.success) {
+    //     return res.status(400).send(verifyReq.message);
+    // }
     const { productId } = req.query;
 
     try {
