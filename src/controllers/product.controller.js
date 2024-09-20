@@ -110,30 +110,18 @@ const editProduct = async (req, res) => {
 
 
 const deleteProduct = async (req, res) => {
-    // const userId = req.user.id;
-    // const ticketId = req.query.id;
+    const { productId } = req.query;
 
-    // if (!ticketId) {
-    //     return res.status(404).json({ message: 'Ticket not found' });
-    // }
-
-    // try {
-    //     // Check if the ticket exists
-    //     const existingTicket = await Tickets.findById(ticketId);
-    //     if (!existingTicket || existingTicket.userId != userId) {
-    //         return res.status(404).json({ message: 'Ticket not found' });
-    //     }
-
-    //     // Delete the ticket
-    //     await Tickets.findByIdAndDelete(ticketId);
-
-    //     res.status(200).json({
-    //         message: 'Ticket deleted successfully',
-    //         success: true
-    //     });
-    // } catch (error) {
-    //     res.status(500).json({ message: 'Failed to delete ticket', error: error.message });
-    // };
+    try {
+        const existingProduct = await Product.findById(productId);
+        if (!existingProduct) {
+            return res.status(404).json({ message: 'Product not found' });
+        }
+        await Product.deleteOne({ _id: productId });
+        res.status(200).json({ success: true, message: 'Product deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Failed to delete product', error: error.message });
+    }
 
 }
 
