@@ -42,10 +42,10 @@ const productList = async (req, res) => {
 
 
 const addProduct = async (req, res) => {
-    // const verifyReq = verifySchema(schema.addProduct, req.body);
-    // if (!verifyReq.success) {
-    //     return res.status(400).send(verifyReq.message);
-    // }
+    const verifyReq = verifySchema(schema.addProduct, req.body);
+    if (!verifyReq.success) {
+        return res.status(400).send(verifyReq.message);
+    }
     const { title, description, price } = req.body;
 
     // Check if image is uploaded
@@ -75,6 +75,10 @@ const addProduct = async (req, res) => {
 
 
 const editProduct = async (req, res) => {
+    const verifyReq = verifySchema(schema.editProduct, req.body);
+    if (!verifyReq.success) {
+        return res.status(400).send(verifyReq.message);
+    }
     const { productId, title, description, price } = req.body;
 
     try {
@@ -120,6 +124,10 @@ const editProduct = async (req, res) => {
 
 
 const deleteProduct = async (req, res) => {
+    const verifyReq = verifySchema(schema.deleteProduct, req.query);
+    if (!verifyReq.success) {
+        return res.status(400).send(verifyReq.message);
+    }
     const { productId } = req.query;
 
     try {

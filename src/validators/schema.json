@@ -86,6 +86,15 @@
       },
       "required": ["title", "description", "price", "productId"],
       "additionalProperties": false
+    },
+    
+    "deleteProduct": {
+      "type": "object",
+      "properties": {
+          "productId": { "type": "string" }
+      },
+      "required": ["title"],
+      "additionalProperties": false
     }
 
 }
