@@ -3,32 +3,52 @@ const schema = require('../validators/schema.json');
 const Product = require('../models/product.model');
 const fs = require('fs');
 const path = require('path');
+const { default: mongoose } = require('mongoose');
+
 
 const productList = async (req, res) => {
-    const currentPage = parseInt(req.query.currentPage) || 1;
-    const itemsPerPage = parseInt(req.query.itemsPerPage) || 10;
-    const keyword = req.query.search || '';
+    const currentPage = parseInt(req.body.currentPage);
+    const itemsPerPage = parseInt(req.body.itemsPerPage);
+    const keyword = req.body.search;
+    const productId = req.body.productId;
 
     try {
-        const query = {};
-        if (keyword) {
-            query.title = { $regex: keyword, $options: 'i' };
+        const matchStage = {};
+
+        if (productId) {
+            matchStage._id = new mongoose.Types.ObjectId(productId);
+        } else if (keyword) {
+            matchStage.title = { $regex: keyword, $options: 'i' };
         }
 
-        const products = await Product.find(query)
-            .skip((currentPage - 1) * itemsPerPage)
-            .limit(itemsPerPage);
+        const pipeline = [];
 
-        const totalCount = await Product.countDocuments(query);
+        if (Object.keys(matchStage).length) {
+            pipeline.push({ $match: matchStage });
+        }
+
+        if (currentPage && itemsPerPage) {
+            pipeline.push({ $skip: (currentPage - 1) * itemsPerPage });
+            pipeline.push({ $limit: itemsPerPage });
+        }
+
+        const countPipeline = [];
+        if (Object.keys(matchStage).length) {
+            countPipeline.push({ $match: matchStage });
+        }
+        countPipeline.push({ $count: 'totalCount' });
+
+        const [products, [{ totalCount } = { totalCount: 0 }]] = await Promise.all([
+            Product.aggregate(pipeline),
+            Product.aggregate(countPipeline),
+        ]);
 
         res.status(200).json({
             success: true,
             data: products,
             pagination: {
-                currentPage,
-                itemsPerPage,
-                totalCount,
-                totalPages: Math.ceil(totalCount / itemsPerPage),
+                totalCount: totalCount || 0,
+                totalPages: Math.ceil((totalCount || 0) / itemsPerPage),
             },
         });
     } catch (error) {
@@ -39,6 +59,8 @@ const productList = async (req, res) => {
         });
     }
 };
+
+
 
 
 const addProduct = async (req, res) => {
