@@ -2,7 +2,7 @@ const verifySchema = require('../validators/validate');
 const schema = require('../validators/schema.json');
 const Product = require('../models/product.model');
 const fs = require('fs');
-const path = require('path');
+// const path = require('path');
 const { default: mongoose } = require('mongoose');
 
 
@@ -59,8 +59,6 @@ const productList = async (req, res) => {
         });
     }
 };
-
-
 
 
 const addProduct = async (req, res) => {

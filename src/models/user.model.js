@@ -31,10 +31,13 @@ const userSchema = new mongoose.Schema({
         enum: ['admin', 'user'],
         default: 'user'
     },
-    createdDate: {
-        type: Date,
-        default: Date.now
-    }
+    status: {
+        type: String,
+        enum: ['ACTIVE', 'INACTIVE'],
+        default: 'ACTIVE'
+    },
+}, {
+    timestamps: true
 });
 
 const User = mongoose.model('User', userSchema);

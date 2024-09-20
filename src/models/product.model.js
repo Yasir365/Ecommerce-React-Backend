@@ -1,10 +1,6 @@
 const mongoose = require('mongoose');
 
 const productSchema = new mongoose.Schema({
-    createdDate: {
-        type: Date,
-        default: Date.now
-    },
     description: {
         type: String,
         required: true
@@ -39,6 +35,8 @@ const productSchema = new mongoose.Schema({
         enum: ['ACTIVE', 'INACTIVE'],
         default: 'ACTIVE'
     }
+}, {
+    timestamps: true
 });
 
 const Product = mongoose.model('Products', productSchema);
