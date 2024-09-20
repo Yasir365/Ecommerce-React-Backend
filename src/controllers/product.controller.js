@@ -1,6 +1,8 @@
 const verifySchema = require('../validators/validate');
 const schema = require('../validators/schema.json');
 const Product = require('../models/product.model');
+const fs = require('fs');
+const path = require('path');
 
 const productList = async (req, res) => {
     const currentPage = parseInt(req.query.currentPage) || 1;
@@ -40,10 +42,10 @@ const productList = async (req, res) => {
 
 
 const addProduct = async (req, res) => {
-    const verifyReq = verifySchema(schema.addProduct, req.body);
-    if (!verifyReq.success) {
-        return res.status(400).send(verifyReq.message);
-    }
+    // const verifyReq = verifySchema(schema.addProduct, req.body);
+    // if (!verifyReq.success) {
+    //     return res.status(400).send(verifyReq.message);
+    // }
     const { title, description, price } = req.body;
 
     // Check if image is uploaded
@@ -73,10 +75,6 @@ const addProduct = async (req, res) => {
 
 
 const editProduct = async (req, res) => {
-    // const verifyReq = verifySchema(schema.editProduct, req.body);
-    // if (!verifyReq.success) {
-    //     return res.status(400).send(verifyReq.message);
-    // }
     const { productId, title, description, price } = req.body;
 
     try {
@@ -85,14 +83,26 @@ const editProduct = async (req, res) => {
             return res.status(404).json({ message: 'Product not found' });
         }
 
+        // Store the old image path
+        const oldImagePath = existingProduct.image;
+
         // Update fields
         if (title) existingProduct.title = title;
         if (description) existingProduct.description = description;
         if (price) existingProduct.price = price;
 
-        // Check if image is uploaded
+        // Check if a new image is uploaded
         if (req.file) {
             existingProduct.image = req.file.path; // Use new file path for the image field
+
+            // Delete the old image file
+            if (oldImagePath) {
+                fs.unlink(oldImagePath, (err) => {
+                    if (err) {
+                        console.error('Failed to delete old image:', err);
+                    }
+                });
+            }
         }
 
         // Save updated product
@@ -117,13 +127,27 @@ const deleteProduct = async (req, res) => {
         if (!existingProduct) {
             return res.status(404).json({ message: 'Product not found' });
         }
+
+        // Store the image path to delete it later
+        const imagePath = existingProduct.image;
+
+        // Delete the product from the database
         await Product.deleteOne({ _id: productId });
+
+        // Delete the image file from the filesystem
+        if (imagePath) {
+            fs.unlink(imagePath, (err) => {
+                if (err) {
+                    console.error('Failed to delete image:', err);
+                }
+            });
+        }
+
         res.status(200).json({ success: true, message: 'Product deleted successfully' });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Failed to delete product', error: error.message });
     }
-
-}
+};
 
 
 module.exports = { productList, addProduct, editProduct, deleteProduct };
