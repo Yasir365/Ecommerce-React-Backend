@@ -169,7 +169,7 @@ const deleteProduct = async (req, res) => {
             product.images.forEach((image, index) => {
                 const fileName = image[`image${index + 1}`];
                 fs.unlink(path.join('/uploads', fileName), (err) => {
-                    if (err) console.error(`Failed to delete image ${key}: ${err}`);
+                    if (err) console.error(`Failed to delete image ${index + 1}: ${err}`);
                 });
             });
         }
