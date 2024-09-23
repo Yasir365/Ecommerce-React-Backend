@@ -157,23 +157,25 @@ const deleteProduct = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Product not found' });
         }
 
+        // Remove thumbnail file
+        // if (product.thumbnail) {
+        //     fs.unlink(path.join('', product.thumbnail), (err) => {
+        //         if (err) console.error(`Failed to delete thumbnail: ${err}`);
+        //     });
+        // }
+
         // Remove image files from the filesystem
-        if (product.thumbnail) {
-            fs.unlink(path.join('', product.thumbnail), (err) => {
-                if (err) console.error(`Failed to delete thumbnail: ${err}`);
-            });
-        }
         if (product.images && product.images.length > 0) {
-            product.images.forEach(image => {
-                console.log(image.image1);
-
-                const imageName = Object.values(image)[0]; // Get the image filename
-                fs.unlink(path.join('uploads', imageName), (err) => {
-                    if (err) console.error(`Failed to delete image: ${err}`);
-                });
+            product.images.forEach((image, index) => {
+                console.log("image :: ", image);
+                // fs.unlink(path.join('/uploads', fileName), (err) => {
+                //     if (err) console.error(`Failed to delete image ${key}: ${err}`);
+                // });
             });
         }
 
+
+        // Delete product from database
         await Product.findByIdAndDelete(productId);
 
         res.status(200).json({
@@ -184,6 +186,7 @@ const deleteProduct = async (req, res) => {
         res.status(500).json({ success: false, message: 'Failed to delete product', error: error.message });
     }
 };
+
 
 
 module.exports = { productList, addProduct, editProduct, deleteProduct };
