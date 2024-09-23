@@ -32,7 +32,9 @@ const productSchema = new mongoose.Schema({
     },
     images: [
         {
-            type: String
+            image1: {type: String},
+            image2: {type: String},
+            image3: {type: String},
         }
     ],
     status: {
