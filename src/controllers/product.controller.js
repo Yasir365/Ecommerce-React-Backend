@@ -64,18 +64,15 @@ const productList = async (req, res) => {
 const addProduct = async (req, res) => {
     const { title, description, price } = req.body;
 
-    // Check if thumbnail is uploaded
     if (!req.files['thumbnail']) {
         return res.status(400).json({ success: false, message: 'Thumbnail is required' });
     }
 
-    // Check if at least one additional image is uploaded
     if (!req.files['image1'] || !req.files['image2'] || !req.files['image3']) {
         return res.status(400).json({ success: false, message: 'Three additional images are required' });
     }
 
     try {
-        // Save file paths
         const thumbnailPath = req.files['thumbnail'][0].filename;
 
         const newProduct = new Product({
@@ -87,6 +84,7 @@ const addProduct = async (req, res) => {
                 { image1: req.files['image1'][0].filename },
                 { image2: req.files['image2'][0].filename },
                 { image3: req.files['image3'][0].filename },
+                { image4: req.files['image4'][0].filename },
             ],
         });
 
@@ -102,12 +100,12 @@ const addProduct = async (req, res) => {
     }
 };
 
+
 const editProduct = async (req, res) => {
     const { productId } = req.body;
     const { title, description, price } = req.body;
 
     try {
-        // Find the existing product
         const existingProduct = await Product.findById(productId);
         if (!existingProduct) {
             return res.status(404).json({ success: false, message: 'Product not found' });
@@ -115,10 +113,8 @@ const editProduct = async (req, res) => {
 
         const updateData = { title, description, price };
 
-        // Remove old thumbnail file if a new one is uploaded
         if (req.files['thumbnail'] && req.files['thumbnail'].length > 0) {
             updateData.thumbnail = req.files['thumbnail'][0].filename;
-            // Remove old thumbnail
             if (existingProduct.thumbnail) {
                 fs.unlink(path.join(existingProduct.thumbnail), (err) => {
                     if (err) console.error(`Failed to delete old thumbnail: ${err}`);
@@ -126,11 +122,9 @@ const editProduct = async (req, res) => {
             }
         }
 
-        // Remove old image files if new ones are uploaded
-        if (req.files['image1'] || req.files['image2'] || req.files['image3']) {
+        if (req.files['image1'] || req.files['image2'] || req.files['image3'] || req.files['image4']) {
             const images = [...existingProduct.images];
 
-            // Remove old images
             existingProduct.images.forEach((image, index) => {
                 const fileName = image[`image${index + 1}`];
                 fs.unlink(path.join('uploads', fileName), (err) => {
@@ -138,15 +132,14 @@ const editProduct = async (req, res) => {
                 });
             });
 
-            // Update specific image slots as needed
             if (req.files['image1']) images[0] = { image1: req.files['image1'][0].filename };
             if (req.files['image2']) images[1] = { image2: req.files['image2'][0].filename };
             if (req.files['image3']) images[2] = { image3: req.files['image3'][0].filename };
+            if (req.files['image4']) images[3] = { image3: req.files['image4'][0].filename };
 
             updateData.images = images;
         }
 
-        // Update the product with the new data
         const updatedProduct = await Product.findByIdAndUpdate(productId, updateData, { new: true });
 
         res.status(200).json({
@@ -159,6 +152,7 @@ const editProduct = async (req, res) => {
     }
 };
 
+
 const deleteProduct = async (req, res) => {
     const { productId } = req.query;
 
@@ -169,14 +163,12 @@ const deleteProduct = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Product not found' });
         }
 
-        // Remove thumbnail file
         if (product.thumbnail) {
             fs.unlink(path.join('', product.thumbnail), (err) => {
                 if (err) console.error(`Failed to delete thumbnail: ${err}`);
             });
         }
 
-        // Remove image files from the filesystem
         if (product.images && product.images.length > 0) {
             product.images.forEach((image, index) => {
                 const fileName = image[`image${index + 1}`];
@@ -189,7 +181,6 @@ const deleteProduct = async (req, res) => {
         }
 
 
-        // Delete product from database
         await Product.findByIdAndDelete(productId);
 
         res.status(200).json({
