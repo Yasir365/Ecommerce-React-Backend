@@ -29,7 +29,9 @@ const upload = multer({
     storage: storage,
     limits: { fileSize: 10 * 1024 * 1024 }, // 10MB file size limit
     fileFilter: fileFilter
-});
+}).fields([
+    { name: 'thumbnail', maxCount: 1 }, // Make sure the form field name is 'thumbnail'
+    { name: 'images', maxCount: 3 }     // Make sure the form field name is 'images'
+]);
 
-// Export the upload instance
 module.exports = upload;

@@ -26,10 +26,15 @@ const productSchema = new mongoose.Schema({
             }
         }
     ],
-    image: {
+    thumbnail: {
         type: String,
         required: true
     },
+    images: [
+        {
+            type: String
+        }
+    ],
     status: {
         type: String,
         enum: ['ACTIVE', 'INACTIVE'],
