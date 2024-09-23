@@ -102,7 +102,6 @@ const addProduct = async (req, res) => {
     }
 };
 
-
 const editProduct = async (req, res) => {
     const { productId } = req.body;
     const { title, description, price } = req.body;
@@ -116,14 +115,28 @@ const editProduct = async (req, res) => {
 
         const updateData = { title, description, price };
 
-        // Check if a new thumbnail is uploaded
+        // Remove old thumbnail file if a new one is uploaded
         if (req.files['thumbnail'] && req.files['thumbnail'].length > 0) {
-            updateData.thumbnail = req.files['thumbnail'][0].filename; // Update thumbnail
+            updateData.thumbnail = req.files['thumbnail'][0].filename;
+            // Remove old thumbnail
+            if (existingProduct.thumbnail) {
+                fs.unlink(path.join('', existingProduct.thumbnail), (err) => {
+                    if (err) console.error(`Failed to delete old thumbnail: ${err}`);
+                });
+            }
         }
 
-        // Check if new images are uploaded
+        // Remove old image files if new ones are uploaded
         if (req.files['image1'] || req.files['image2'] || req.files['image3']) {
-            const images = [...existingProduct.images]; // Start with existing images
+            const images = [...existingProduct.images];
+
+            // Remove old images
+            existingProduct.images.forEach((image, index) => {
+                const fileName = image[`image${index + 1}`];
+                fs.unlink(path.join('uploads', fileName), (err) => {
+                    if (err) console.error(`Failed to delete old image ${index + 1}: ${err}`);
+                });
+            });
 
             // Update specific image slots as needed
             if (req.files['image1']) images[0] = { image1: req.files['image1'][0].filename };
@@ -146,7 +159,6 @@ const editProduct = async (req, res) => {
     }
 };
 
-
 const deleteProduct = async (req, res) => {
     const { productId } = req.query;
 
@@ -168,8 +180,8 @@ const deleteProduct = async (req, res) => {
         if (product.images && product.images.length > 0) {
             product.images.forEach((image, index) => {
                 const fileName = image[`image${index + 1}`];
-                console.log("fileName :: ",fileName);
-                
+                console.log("fileName :: ", fileName);
+
                 fs.unlink(path.join('uploads', fileName), (err) => {
                     if (err) console.error(`Failed to delete image ${index + 1}: ${err}`);
                 });
