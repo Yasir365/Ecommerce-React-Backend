@@ -34,6 +34,7 @@ const upload = multer({
     { name: 'image1', maxCount: 1 },    // Image field 1
     { name: 'image2', maxCount: 1 },    // Image field 2
     { name: 'image3', maxCount: 1 }     // Image field 3
+    { name: 'image4', maxCount: 1 }     // Image field 3
 ]);
 
 module.exports = upload;
