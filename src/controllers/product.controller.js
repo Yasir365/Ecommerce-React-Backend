@@ -105,23 +105,36 @@ const editProduct = async (req, res) => {
     const { title, description, price } = req.body;
 
     try {
+        // Find the existing product
+        const existingProduct = await Product.findById(productId);
+        if (!existingProduct) {
+            return res.status(404).json({ success: false, message: 'Product not found' });
+        }
+
         const updateData = { title, description, price };
 
         // Check if a new thumbnail is uploaded
         if (req.files['thumbnail'] && req.files['thumbnail'].length > 0) {
-            updateData.thumbnail = req.files['thumbnail'][0].path;
+            updateData.thumbnail = req.files['thumbnail'][0].path; // Update thumbnail
         }
 
         // Check if new images are uploaded
         if (req.files['images']) {
-            updateData.images = req.files['images'].map(file => file.path);
+            const newImages = req.files['images'].map(file => file.path); // Get new images paths
+
+            // Update only the images that are provided
+            updateData.images = [...existingProduct.images]; // Start with existing images
+
+            // Replace the specific image slots as needed (0, 1, 2 corresponds to image1, image2, image3)
+            newImages.forEach((newImage, index) => {
+                if (existingProduct.images[index] !== undefined) {
+                    updateData.images[index] = newImage; // Replace image at that index
+                }
+            });
         }
 
+        // Update the product with the new data
         const updatedProduct = await Product.findByIdAndUpdate(productId, updateData, { new: true });
-
-        if (!updatedProduct) {
-            return res.status(404).json({ success: false, message: 'Product not found' });
-        }
 
         res.status(200).json({
             message: 'Product updated successfully',
@@ -132,7 +145,6 @@ const editProduct = async (req, res) => {
         res.status(500).json({ success: false, message: 'Failed to update product', error: error.message });
     }
 };
-
 
 
 const deleteProduct = async (req, res) => {
