@@ -68,7 +68,7 @@ const addProduct = async (req, res) => {
         return res.status(400).json({ success: false, message: 'Thumbnail is required' });
     }
 
-    if (!req.files['image1'] || !req.files['image2'] || !req.files['image3']) {
+    if (!req.files['image1'] || !req.files['image2'] || !req.files['image3'] || !req.files['image4']) {
         return res.status(400).json({ success: false, message: 'Three additional images are required' });
     }
 
