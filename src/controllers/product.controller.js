@@ -158,17 +158,19 @@ const deleteProduct = async (req, res) => {
         }
 
         // Remove thumbnail file
-        // if (product.thumbnail) {
-        //     fs.unlink(path.join('', product.thumbnail), (err) => {
-        //         if (err) console.error(`Failed to delete thumbnail: ${err}`);
-        //     });
-        // }
+        if (product.thumbnail) {
+            fs.unlink(path.join('', product.thumbnail), (err) => {
+                if (err) console.error(`Failed to delete thumbnail: ${err}`);
+            });
+        }
 
         // Remove image files from the filesystem
         if (product.images && product.images.length > 0) {
             product.images.forEach((image, index) => {
                 const fileName = image[`image${index + 1}`];
-                fs.unlink(path.join('/uploads', fileName), (err) => {
+                console.log("fileName :: ",fileName);
+                
+                fs.unlink(path.join('uploads', fileName), (err) => {
                     if (err) console.error(`Failed to delete image ${index + 1}: ${err}`);
                 });
             });
