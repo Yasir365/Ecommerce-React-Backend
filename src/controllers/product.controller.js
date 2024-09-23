@@ -158,20 +158,21 @@ const deleteProduct = async (req, res) => {
         }
 
         // Remove image files from the filesystem
-        const deleteThumbnail = product.thumbnail
-            ? fs.promises.unlink(product.thumbnail)
-            : Promise.resolve();
+        if (product.thumbnail) {
+            fs.unlink(path.join('', product.thumbnail), (err) => {
+                if (err) console.error(`Failed to delete thumbnail: ${err}`);
+            });
+        }
+        if (product.images && product.images.length > 0) {
+            product.images.forEach(image => {
+                console.log(image.image1);
 
-        const deleteImages = product.images
-            ? Promise.all(
-                product.images.map(image => {
-                    const imageName = Object.values(image)[0];
-                    return fs.promises.unlink(imageName);
-                })
-            )
-            : Promise.resolve();
-
-        await Promise.all([deleteThumbnail, deleteImages]);
+                const imageName = Object.values(image)[0]; // Get the image filename
+                fs.unlink(path.join('uploads', imageName), (err) => {
+                    if (err) console.error(`Failed to delete image: ${err}`);
+                });
+            });
+        }
 
         await Product.findByIdAndDelete(productId);
 
@@ -183,4 +184,6 @@ const deleteProduct = async (req, res) => {
         res.status(500).json({ success: false, message: 'Failed to delete product', error: error.message });
     }
 };
+
+
 module.exports = { productList, addProduct, editProduct, deleteProduct };
