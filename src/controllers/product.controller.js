@@ -70,21 +70,24 @@ const addProduct = async (req, res) => {
     }
 
     // Check if at least one additional image is uploaded
-    if (!req.files['images'] || req.files['images'].length === 0) {
-        return res.status(400).json({ success: false, message: 'At least one additional image is required' });
+    if (!req.files['image1'] || !req.files['image2'] || !req.files['image3']) {
+        return res.status(400).json({ success: false, message: 'Three additional images are required' });
     }
 
     try {
         // Save file paths
         const thumbnailPath = req.files['thumbnail'][0].path;
-        const imagesPaths = req.files['images'].map(file => file.path);
 
         const newProduct = new Product({
             title,
             description,
             price,
-            thumbnail: thumbnailPath, // Save thumbnail path
-            images: imagesPaths // Save additional images paths
+            thumbnail: thumbnailPath,
+            images: [
+                { image1: req.files['image1'][0].filename },
+                { image2: req.files['image2'][0].filename },
+                { image3: req.files['image3'][0].filename },
+            ],
         });
 
         const savedProduct = await newProduct.save();
