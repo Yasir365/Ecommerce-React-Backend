@@ -118,22 +118,19 @@ const editProduct = async (req, res) => {
 
         // Check if a new thumbnail is uploaded
         if (req.files['thumbnail'] && req.files['thumbnail'].length > 0) {
-            updateData.thumbnail = req.files['thumbnail'][0].path; // Update thumbnail
+            updateData.thumbnail = req.files['thumbnail'][0].filename; // Update thumbnail
         }
 
         // Check if new images are uploaded
-        if (req.files['images']) {
-            const newImages = req.files['images'].map(file => file.path); // Get new images paths
+        if (req.files['image1'] || req.files['image2'] || req.files['image3']) {
+            const images = [...existingProduct.images]; // Start with existing images
 
-            // Update only the images that are provided
-            updateData.images = [...existingProduct.images]; // Start with existing images
+            // Update specific image slots as needed
+            if (req.files['image1']) images[0] = { image1: req.files['image1'][0].filename };
+            if (req.files['image2']) images[1] = { image2: req.files['image2'][0].filename };
+            if (req.files['image3']) images[2] = { image3: req.files['image3'][0].filename };
 
-            // Replace the specific image slots as needed (0, 1, 2 corresponds to image1, image2, image3)
-            newImages.forEach((newImage, index) => {
-                if (existingProduct.images[index] !== undefined) {
-                    updateData.images[index] = newImage; // Replace image at that index
-                }
-            });
+            updateData.images = images;
         }
 
         // Update the product with the new data
