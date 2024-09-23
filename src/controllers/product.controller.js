@@ -76,7 +76,7 @@ const addProduct = async (req, res) => {
 
     try {
         // Save file paths
-        const thumbnailPath = req.files['thumbnail'][0].path;
+        const thumbnailPath = req.files['thumbnail'][0].filename;
 
         const newProduct = new Product({
             title,
@@ -120,7 +120,7 @@ const editProduct = async (req, res) => {
             updateData.thumbnail = req.files['thumbnail'][0].filename;
             // Remove old thumbnail
             if (existingProduct.thumbnail) {
-                fs.unlink(path.join('', existingProduct.thumbnail), (err) => {
+                fs.unlink(path.join(existingProduct.thumbnail), (err) => {
                     if (err) console.error(`Failed to delete old thumbnail: ${err}`);
                 });
             }
