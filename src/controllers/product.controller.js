@@ -4,6 +4,7 @@ const Product = require('../models/product.model');
 const fs = require('fs');
 const path = require('path');
 const { default: mongoose } = require('mongoose');
+const { cloudinary } = require('../middlewares/cloudinary.config'); // Import cloudinary
 
 
 const productList = async (req, res) => {
@@ -73,18 +74,18 @@ const addProduct = async (req, res) => {
     }
 
     try {
-        const thumbnailPath = req.files['thumbnail'][0].filename;
+        const thumbnailUrl = req.files['thumbnail'][0].path;  // Cloudinary stores the URL in 'path'
 
         const newProduct = new Product({
             title,
             description,
             price,
-            thumbnail: thumbnailPath,
+            thumbnail: thumbnailUrl,
             images: [
-                { image1: req.files['image1'][0].filename },
-                { image2: req.files['image2'][0].filename },
-                { image3: req.files['image3'][0].filename },
-                { image4: req.files['image4'][0].filename },
+                { image1: req.files['image1'][0].path },  // Cloudinary URLs
+                { image2: req.files['image2'][0].path },
+                { image3: req.files['image3'][0].path },
+                { image4: req.files['image4'][0].path },
             ],
         });
 
@@ -101,6 +102,7 @@ const addProduct = async (req, res) => {
 };
 
 
+
 const editProduct = async (req, res) => {
     const { productId } = req.body;
     const { title, description, price } = req.body;
@@ -113,29 +115,35 @@ const editProduct = async (req, res) => {
 
         const updateData = { title, description, price };
 
+        // Handle thumbnail update
         if (req.files['thumbnail'] && req.files['thumbnail'].length > 0) {
-            updateData.thumbnail = req.files['thumbnail'][0].filename;
+            // Delete old thumbnail from Cloudinary
             if (existingProduct.thumbnail) {
-                fs.unlink(path.join(existingProduct.thumbnail), (err) => {
-                    if (err) console.error(`Failed to delete old thumbnail: ${err}`);
-                });
+                const publicId = existingProduct.thumbnail.split('/').pop().split('.')[0];
+                await cloudinary.uploader.destroy(publicId); // Deletes the image from Cloudinary
             }
+            updateData.thumbnail = req.files['thumbnail'][0].path;  // New Cloudinary thumbnail URL
         }
 
+        // Handle additional images update
         if (req.files['image1'] || req.files['image2'] || req.files['image3'] || req.files['image4']) {
-            const images = [...existingProduct.images];
+            const images = [];
 
-            existingProduct.images.forEach((image, index) => {
-                const fileName = image[`image${index + 1}`];
-                fs.unlink(path.join('uploads', fileName), (err) => {
-                    if (err) console.error(`Failed to delete old image ${index + 1}: ${err}`);
-                });
-            });
+            // Delete old images from Cloudinary
+            for (const image of existingProduct.images) {
+                for (const value of Object.values(image)) {
+                    if (typeof value === 'string') {
+                        const publicId = value.split('/').pop().split('.')[0];
+                        await cloudinary.uploader.destroy(publicId); // Deletes the image from Cloudinary
+                    }
+                }
+            }
 
-            if (req.files['image1']) images[0] = { image1: req.files['image1'][0].filename };
-            if (req.files['image2']) images[1] = { image2: req.files['image2'][0].filename };
-            if (req.files['image3']) images[2] = { image3: req.files['image3'][0].filename };
-            if (req.files['image4']) images[3] = { image3: req.files['image4'][0].filename };
+            // Update new images
+            if (req.files['image1']) images.push({ image1: req.files['image1'][0].path });
+            if (req.files['image2']) images.push({ image2: req.files['image2'][0].path });
+            if (req.files['image3']) images.push({ image3: req.files['image3'][0].path });
+            if (req.files['image4']) images.push({ image4: req.files['image4'][0].path });
 
             updateData.images = images;
         }
@@ -153,6 +161,8 @@ const editProduct = async (req, res) => {
 };
 
 
+
+
 const deleteProduct = async (req, res) => {
     const { productId } = req.query;
 
@@ -163,24 +173,26 @@ const deleteProduct = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Product not found' });
         }
 
+        // Delete the thumbnail from Cloudinary
         if (product.thumbnail) {
-            fs.unlink(path.join('', product.thumbnail), (err) => {
-                if (err) console.error(`Failed to delete thumbnail: ${err}`);
-            });
+            const publicId = product.thumbnail.split('/').pop().split('.')[0];
+            await cloudinary.uploader.destroy(publicId);  // Deletes the image from Cloudinary
         }
 
+        // Delete additional images from Cloudinary
         if (product.images && product.images.length > 0) {
-            product.images.forEach((image, index) => {
-                const fileName = image[`image${index + 1}`];
-                console.log("fileName :: ", fileName);
-
-                fs.unlink(path.join('uploads', fileName), (err) => {
-                    if (err) console.error(`Failed to delete image ${index + 1}: ${err}`);
-                });
-            });
+            for (const imageObj of product.images) {
+                // Loop through the object's values to find the image URL
+                for (const [key, fileName] of Object.entries(imageObj)) {
+                    if (key.startsWith('image') && typeof fileName === 'string') {
+                        const publicId = fileName.split('/').pop().split('.')[0];  // Extract Cloudinary public ID
+                        await cloudinary.uploader.destroy(publicId);  // Deletes the image from Cloudinary
+                    }
+                }
+            }
         }
 
-
+        // Remove product from the database
         await Product.findByIdAndDelete(productId);
 
         res.status(200).json({
@@ -191,6 +203,7 @@ const deleteProduct = async (req, res) => {
         res.status(500).json({ success: false, message: 'Failed to delete product', error: error.message });
     }
 };
+
 
 
 
