@@ -11,7 +11,7 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: {
-        folder: 'ecommerce_products',
+        folder: 'Ecommerce-React-Images',
         format: async (req, file) => 'jpg',
         public_id: (req, file) => Date.now() + '-' + file.originalname,
     },

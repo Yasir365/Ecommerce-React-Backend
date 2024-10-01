@@ -113,37 +113,52 @@ const editProduct = async (req, res) => {
 
         const updateData = { title, description, price };
 
-        // Handle thumbnail update
-        if (req.files['thumbnail'] && req.files['thumbnail'].length > 0) {
-            // Delete old thumbnail from Cloudinary
+        if (req.files['thumbnail']) {
             if (existingProduct.thumbnail) {
-                const publicId = existingProduct.thumbnail.split('/').pop().split('.')[0];
-                await cloudinary.uploader.destroy(publicId); // Deletes the image from Cloudinary
+                const publicId = existingProduct.thumbnail.filename;
+                const deleteThumbnail = await cloudinary.uploader.destroy(publicId);
+                console.log("Thumbnail deleted:", deleteThumbnail);
             }
-            updateData.thumbnail = req.files['thumbnail'][0].path;  // New Cloudinary thumbnail URL
+            updateData.thumbnail = req.files['thumbnail'][0]
         }
 
-        // Handle additional images update
+        // Update images
         if (req.files['image1'] || req.files['image2'] || req.files['image3'] || req.files['image4']) {
-            const images = [];
+            const images = [...existingProduct.images];
 
-            // Delete old images from Cloudinary
-            for (const image of existingProduct.images) {
-                for (const value of Object.values(image)) {
-                    if (typeof value === 'string') {
-                        const publicId = value.split('/').pop().split('.')[0];
-                        await cloudinary.uploader.destroy(publicId); // Deletes the image from Cloudinary
-                    }
+            // Delete and update images
+            if (req.files['image1']) {
+                if (images[0]) {
+                    const publicId = images[0].filename;
+                    const deleteImage = await cloudinary.uploader.destroy(publicId);
+                    console.log("Image1 deleted:", deleteImage);
                 }
+                images[0] = req.files['image1'][0];
             }
-
-            // Update new images
-            if (req.files['image1']) images.push({ image1: req.files['image1'][0].path });
-            if (req.files['image2']) images.push({ image2: req.files['image2'][0].path });
-            if (req.files['image3']) images.push({ image3: req.files['image3'][0].path });
-            if (req.files['image4']) images.push({ image4: req.files['image4'][0].path });
-
-
+            if (req.files['image2']) {
+                if (images[1]) {
+                    const publicId = images[1].filename;
+                    const deleteImage = await cloudinary.uploader.destroy(publicId);
+                    console.log("Image2 deleted:", deleteImage);
+                }
+                images[1] = req.files['image2'][0];
+            }
+            if (req.files['image3']) {
+                if (images[2]) {
+                    const publicId = images[2].filename;
+                    const deleteImage = await cloudinary.uploader.destroy(publicId);
+                    console.log("Image3 deleted:", deleteImage);
+                }
+                images[2] = req.files['image3'][0];
+            }
+            if (req.files['image4']) {
+                if (images[3]) {
+                    const publicId = images[3].filename;
+                    const deleteImage = await cloudinary.uploader.destroy(publicId);
+                    console.log("Image4 deleted:", deleteImage);
+                }
+                images[3] = req.files['image4'][0];
+            }
 
             updateData.images = images;
         }
