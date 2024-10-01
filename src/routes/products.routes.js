@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const { productList, addProduct, editProduct, deleteProduct } = require('../controllers/product.controller');
-const upload = require('../middlewares/multer.config');
-const { authenticateToken, isAdmin } = require('../middlewares/jwt.service');
+const upload = require('../middlewares/multer.middleware');
+const { authenticateToken, isAdmin } = require('../middlewares/jwt.middleware');
 
 router.post('/get-product', productList);
 router.post('/add-product', authenticateToken, isAdmin, upload, addProduct);

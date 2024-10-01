@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const { login, register, verifyOTP, forgetPassword, resetPassword, verifyToken, changePassword } = require('../controllers/auth.controller');
-const { authenticateToken } = require('../middlewares/jwt.service');
+const { authenticateToken } = require('../middlewares/jwt.middleware');
 
 
 router.post('/login', login);

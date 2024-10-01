@@ -1,5 +1,5 @@
 const multer = require('multer');
-const { storage } = require('./cloudinary.config'); 
+const { storage } = require('../config/cloudinary.config'); 
 const path = require('path');
 
 const fileFilter = (req, file, cb) => {

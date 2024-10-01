@@ -2,7 +2,7 @@ const User = require('../models/user.model');
 const verifySchema = require('../validators/validate');
 const schema = require('../validators/schema.json');
 const bcrypt = require('bcrypt');
-const { generateToken } = require('../middlewares/jwt.service')
+const { generateToken } = require('../middlewares/jwt.middleware');
 const nodemailer = require('nodemailer');
 require('dotenv').config();
 const path = require('path');

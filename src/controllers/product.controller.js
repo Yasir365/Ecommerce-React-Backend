@@ -4,7 +4,7 @@ const Product = require('../models/product.model');
 const fs = require('fs');
 const path = require('path');
 const { default: mongoose } = require('mongoose');
-const { cloudinary } = require('../middlewares/cloudinary.config'); // Import cloudinary
+const { cloudinary } = require('../config/cloudinary.config'); // Import cloudinary
 
 
 const productList = async (req, res) => {
