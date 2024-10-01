@@ -27,17 +27,10 @@ const productSchema = new mongoose.Schema({
         }
     ],
     thumbnail: {
-        type: String,
+        type: Object,
         required: true
     },
-    images: [
-        {
-            image1: {type: String},
-            image2: {type: String},
-            image3: {type: String},
-            image4: {type: String},
-        }
-    ],
+    images: [],
     status: {
         type: String,
         enum: ['ACTIVE', 'INACTIVE'],

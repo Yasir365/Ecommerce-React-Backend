@@ -74,18 +74,16 @@ const addProduct = async (req, res) => {
     }
 
     try {
-        const thumbnailUrl = req.files['thumbnail'][0].path;  // Cloudinary stores the URL in 'path'
-
         const newProduct = new Product({
             title,
             description,
             price,
-            thumbnail: thumbnailUrl,
+            thumbnail: req.files['thumbnail'][0],
             images: [
-                { image1: req.files['image1'][0].path },  // Cloudinary URLs
-                { image2: req.files['image2'][0].path },
-                { image3: req.files['image3'][0].path },
-                { image4: req.files['image4'][0].path },
+                req.files['image1'][0],
+                req.files['image2'][0],
+                req.files['image3'][0],
+                req.files['image4'][0],
             ],
         });
 
@@ -145,6 +143,8 @@ const editProduct = async (req, res) => {
             if (req.files['image3']) images.push({ image3: req.files['image3'][0].path });
             if (req.files['image4']) images.push({ image4: req.files['image4'][0].path });
 
+
+
             updateData.images = images;
         }
 
@@ -175,20 +175,16 @@ const deleteProduct = async (req, res) => {
 
         // Delete the thumbnail from Cloudinary
         if (product.thumbnail) {
-            const publicId = product.thumbnail.split('/').pop().split('.')[0];
-            await cloudinary.uploader.destroy(publicId);  // Deletes the image from Cloudinary
+            const publicId = product.thumbnail.filename;
+            let deleteImage = await cloudinary.uploader.destroy(publicId);
+            console.log("Thumbnail deleted:", deleteImage);
         }
 
-        // Delete additional images from Cloudinary
         if (product.images && product.images.length > 0) {
-            for (const imageObj of product.images) {
-                // Loop through the object's values to find the image URL
-                for (const [key, fileName] of Object.entries(imageObj)) {
-                    if (key.startsWith('image') && typeof fileName === 'string') {
-                        const publicId = fileName.split('/').pop().split('.')[0];  // Extract Cloudinary public ID
-                        await cloudinary.uploader.destroy(publicId);  // Deletes the image from Cloudinary
-                    }
-                }
+            for (const image of product.images) {
+                const publicId = image.filename;
+                const deleteSubImage = await cloudinary.uploader.destroy(publicId);
+                console.log("SubImage deleted:", deleteSubImage);
             }
         }
 
