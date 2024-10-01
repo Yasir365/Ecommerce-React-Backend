@@ -122,11 +122,9 @@ const editProduct = async (req, res) => {
             updateData.thumbnail = req.files['thumbnail'][0]
         }
 
-        // Update images
         if (req.files['image1'] || req.files['image2'] || req.files['image3'] || req.files['image4']) {
             const images = [...existingProduct.images];
 
-            // Delete and update images
             if (req.files['image1']) {
                 if (images[0]) {
                     const publicId = images[0].filename;
@@ -188,7 +186,6 @@ const deleteProduct = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Product not found' });
         }
 
-        // Delete the thumbnail from Cloudinary
         if (product.thumbnail) {
             const publicId = product.thumbnail.filename;
             let deleteImage = await cloudinary.uploader.destroy(publicId);
@@ -203,7 +200,6 @@ const deleteProduct = async (req, res) => {
             }
         }
 
-        // Remove product from the database
         await Product.findByIdAndDelete(productId);
 
         res.status(200).json({
