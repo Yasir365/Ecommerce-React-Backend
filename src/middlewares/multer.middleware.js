@@ -1,5 +1,5 @@
 const multer = require('multer');
-const { storage } = require('../config/cloudinary.config'); 
+const { storage } = require('../config/cloudinary.config');
 const path = require('path');
 
 const fileFilter = (req, file, cb) => {
@@ -15,15 +15,15 @@ const fileFilter = (req, file, cb) => {
 };
 
 const upload = multer({
-    storage: storage,  // Use Cloudinary storage
-    limits: { fileSize: 10 * 1024 * 1024 },  // 10 MB limit
+    storage: storage,
+    limits: { fileSize: 10 * 1024 * 1024 },
     fileFilter: fileFilter
 }).fields([
-    { name: 'thumbnail', maxCount: 1 }, 
-    { name: 'image1', maxCount: 1 },    
-    { name: 'image2', maxCount: 1 },    
-    { name: 'image3', maxCount: 1 },    
-    { name: 'image4', maxCount: 1 }     
+    { name: 'thumbnail', maxCount: 1 },
+    { name: 'image1', maxCount: 1 },
+    { name: 'image2', maxCount: 1 },
+    { name: 'image3', maxCount: 1 },
+    { name: 'image4', maxCount: 1 }
 ]);
 
 module.exports = upload;
