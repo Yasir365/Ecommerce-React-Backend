@@ -1,5 +1,8 @@
 const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const { v4: uuidv4 } = require('uuid');
+
+
 require('dotenv').config();
 
 cloudinary.config({
@@ -13,7 +16,7 @@ const storage = new CloudinaryStorage({
     params: {
         folder: 'Ecommerce-React-Images',
         format: async (req, file) => 'jpg',
-        public_id: (req, file) => Date.now() + '-' + file.originalname,
+        public_id: (req, file) => Date.now() + '-' + uuidv4() + '-' + file.originalname,
     },
 });
 
