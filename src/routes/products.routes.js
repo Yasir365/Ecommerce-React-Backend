@@ -1,8 +1,9 @@
 const express = require('express');
-const router = express.Router();
 const { productList, addProduct, editProduct, deleteProduct } = require('../controllers/product.controller');
 const upload = require('../middlewares/multer.middleware');
 const { authenticateToken, isAdmin } = require('../middlewares/jwt.middleware');
+
+const router = express.Router();
 
 router.post('/get-product', productList);
 router.post('/add-product', authenticateToken, isAdmin, upload, addProduct);

@@ -4,7 +4,9 @@ const Product = require('../models/product.model');
 const fs = require('fs');
 const path = require('path');
 const { default: mongoose } = require('mongoose');
-const { cloudinary } = require('../config/cloudinary.config'); // Import cloudinary
+const cloudinary = require('../config/cloudinary.config');
+const { v4: uuidv4 } = require('uuid');
+
 
 
 const productList = async (req, res) => {
@@ -70,21 +72,56 @@ const addProduct = async (req, res) => {
     }
 
     if (!req.files['image1'] || !req.files['image2'] || !req.files['image3'] || !req.files['image4']) {
-        return res.status(400).json({ success: false, message: 'Three additional images are required' });
+        return res.status(400).json({ success: false, message: 'Four additional images are required' });
     }
 
     try {
+        const uploadThumbnail = new Promise((resolve, reject) => {
+            cloudinary.uploader.upload_stream(
+                {
+                    folder: 'Ecommerce-React-Images',
+                    public_id: `thumbnail_${uuidv4()}`,
+                },
+                (error, result) => {
+                    if (error) reject(error);
+                    resolve({
+                        filename: result.public_id,
+                        path: result.secure_url,
+                    });
+                }
+            ).end(req.files['thumbnail'][0].buffer);
+        });
+
+        const imageUploads = [];
+        for (let i = 1; i <= 4; i++) {
+            const imageFile = req.files[`image${i}`][0];
+            const uploadPromise = new Promise((resolve, reject) => {
+                cloudinary.uploader.upload_stream(
+                    {
+                        folder: 'Ecommerce-React-Images',
+                        public_id: `image${i}_${uuidv4()}`,
+                    },
+                    (error, result) => {
+                        if (error) reject(error);
+                        else resolve({
+                            filename: result.public_id,
+                            path: result.secure_url,
+                        });
+                    }
+                ).end(imageFile.buffer);
+            });
+            imageUploads.push(uploadPromise);
+        }
+        const results = await Promise.all([uploadThumbnail, ...imageUploads]);
+        const thumbnailResult = results[0];
+        const imagesResults = results.slice(1);
+
         const newProduct = new Product({
             title,
             description,
             price,
-            thumbnail: req.files['thumbnail'][0],
-            images: [
-                req.files['image1'][0],
-                req.files['image2'][0],
-                req.files['image3'][0],
-                req.files['image4'][0],
-            ],
+            thumbnail: thumbnailResult,
+            images: imagesResults,
         });
 
         const savedProduct = await newProduct.save();
@@ -92,7 +129,7 @@ const addProduct = async (req, res) => {
         res.status(201).json({
             message: 'Product added successfully',
             data: savedProduct,
-            success: true
+            success: true,
         });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Failed to add product', error: error.message });
@@ -114,48 +151,59 @@ const editProduct = async (req, res) => {
         const updateData = { title, description, price };
 
         if (req.files['thumbnail']) {
-            if (existingProduct.thumbnail) {
-                const publicId = existingProduct.thumbnail.filename;
-                const deleteThumbnail = await cloudinary.uploader.destroy(publicId);
-                console.log("Thumbnail deleted:", deleteThumbnail);
+            if (existingProduct.thumbnail && existingProduct.thumbnail.filename) {
+                await cloudinary.uploader.destroy(existingProduct.thumbnail.filename);
             }
-            updateData.thumbnail = req.files['thumbnail'][0]
+
+            const uploadThumbnail = new Promise((resolve, reject) => {
+                cloudinary.uploader.upload_stream(
+                    {
+                        folder: 'Ecommerce-React-Images',
+                        public_id: `thumbnail_${uuidv4()}`,
+                    },
+                    (error, result) => {
+                        if (error) reject(error);
+                        resolve({
+                            filename: result.public_id,
+                            path: result.secure_url,
+                        });
+                    }
+                ).end(req.files['thumbnail'][0].buffer);
+            });
+
+            const results = await Promise.all([uploadThumbnail]);
+            const thumbnailResult = results[0];
+
+            updateData.thumbnail = thumbnailResult;
         }
 
         if (req.files['image1'] || req.files['image2'] || req.files['image3'] || req.files['image4']) {
             const images = [...existingProduct.images];
 
-            if (req.files['image1']) {
-                if (images[0]) {
-                    const publicId = images[0].filename;
-                    const deleteImage = await cloudinary.uploader.destroy(publicId);
-                    console.log("Image1 deleted:", deleteImage);
+            for (let i = 1; i <= 4; i++) {
+                if (req.files[`image${i}`]) {
+                    if (images[i - 1] && images[i - 1].filename) {
+                        await cloudinary.uploader.destroy(images[i - 1].filename);
+                    }
+
+                    const imageResult = await new Promise((resolve, reject) => {
+                        cloudinary.uploader.upload_stream(
+                            {
+                                folder: 'Ecommerce-React-Images',
+                                public_id: `image${i}_${uuidv4()}`,
+                            },
+                            (error, result) => {
+                                if (error) reject(error);
+                                else resolve({
+                                    filename: result.public_id,
+                                    path: result.secure_url,
+                                });
+                            }
+                        ).end(req.files[`image${i}`][0].buffer);
+                    });
+
+                    images[i - 1] = imageResult;
                 }
-                images[0] = req.files['image1'][0];
-            }
-            if (req.files['image2']) {
-                if (images[1]) {
-                    const publicId = images[1].filename;
-                    const deleteImage = await cloudinary.uploader.destroy(publicId);
-                    console.log("Image2 deleted:", deleteImage);
-                }
-                images[1] = req.files['image2'][0];
-            }
-            if (req.files['image3']) {
-                if (images[2]) {
-                    const publicId = images[2].filename;
-                    const deleteImage = await cloudinary.uploader.destroy(publicId);
-                    console.log("Image3 deleted:", deleteImage);
-                }
-                images[2] = req.files['image3'][0];
-            }
-            if (req.files['image4']) {
-                if (images[3]) {
-                    const publicId = images[3].filename;
-                    const deleteImage = await cloudinary.uploader.destroy(publicId);
-                    console.log("Image4 deleted:", deleteImage);
-                }
-                images[3] = req.files['image4'][0];
             }
 
             updateData.images = images;
@@ -166,7 +214,7 @@ const editProduct = async (req, res) => {
         res.status(200).json({
             message: 'Product updated successfully',
             data: updatedProduct,
-            success: true
+            success: true,
         });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Failed to update product', error: error.message });
@@ -186,17 +234,15 @@ const deleteProduct = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Product not found' });
         }
 
-        if (product.thumbnail) {
-            const publicId = product.thumbnail.filename;
-            let deleteImage = await cloudinary.uploader.destroy(publicId);
-            console.log("Thumbnail deleted:", deleteImage);
+        if (product.thumbnail && product.thumbnail.filename) {
+            await cloudinary.uploader.destroy(product.thumbnail.filename);
         }
 
         if (product.images && product.images.length > 0) {
             for (const image of product.images) {
-                const publicId = image.filename;
-                const deleteSubImage = await cloudinary.uploader.destroy(publicId);
-                console.log("SubImage deleted:", deleteSubImage);
+                if (image && image.filename) {
+                    await cloudinary.uploader.destroy(image.filename);
+                }
             }
         }
 
@@ -204,7 +250,7 @@ const deleteProduct = async (req, res) => {
 
         res.status(200).json({
             message: 'Product deleted successfully',
-            success: true
+            success: true,
         });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Failed to delete product', error: error.message });

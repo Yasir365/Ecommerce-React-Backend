@@ -1,5 +1,4 @@
 const multer = require('multer');
-const { storage } = require('../config/cloudinary.config');
 const path = require('path');
 
 const fileFilter = (req, file, cb) => {
@@ -10,13 +9,15 @@ const fileFilter = (req, file, cb) => {
     if (extName && mimeType) {
         return cb(null, true);
     } else {
-        cb('Error: Images only!');
+        cb(new Error('Error: Images only!'));
     }
 };
 
+const storage = multer.memoryStorage(); // Use memory storage
+
 const upload = multer({
     storage: storage,
-    limits: { fileSize: 10 * 1024 * 1024 },
+    limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB limit
     fileFilter: fileFilter
 }).fields([
     { name: 'thumbnail', maxCount: 1 },
