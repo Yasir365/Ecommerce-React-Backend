@@ -4,14 +4,9 @@
         {
             "src": "index.js",
             "use": "@vercel/node",
-            "command": "npm i --legacy-peer-deps"
+            "command": "npm i --legacy-peer-deps && node index.js"
         }
     ],
-    "start": {
-        "src": "index.js",
-        "use": "@vercel/node",
-        "command": "node index.js"
-    },
     "routes": [
         {
             "src": "/(.*)",
