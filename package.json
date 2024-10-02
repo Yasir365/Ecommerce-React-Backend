@@ -6,7 +6,8 @@
     "node": ">=16.0.0"
   },
   "scripts": {
-    "start": "node ./index.js"
+    "start": "node ./index.js",
+    "build": "npm i --legacy-peer-deps && npm run build"
   },
   "dependencies": {
     "ajv": "^8.13.0",
