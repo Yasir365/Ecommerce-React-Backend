@@ -4,7 +4,7 @@
         {
             "src": "index.js",
             "use": "@vercel/node",
-            "command": "npm i --legacy-peer-deps && node index.js"
+            "command": "npm i --legacy-peer-deps"
         }
     ],
     "routes": [
